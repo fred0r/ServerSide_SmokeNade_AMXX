@@ -271,9 +271,8 @@ static CPartSmokeGrenade_Think(const entity) {
     static Float: scale
     pev(entity, pev_scale, scale)
     scale += pev(entity, _pev_scaleSpeed)
-    const Float: maxScale = 8.0
-    if (brightness < 20.0 && scale > maxScale)
-        scale = maxScale
+    if (scale > 8.0)
+        scale = 8.0
     set_pev(entity, pev_scale, scale)
 
     const Float: thinkFreq = 0.05
