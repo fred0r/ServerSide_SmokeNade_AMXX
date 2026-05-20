@@ -516,7 +516,7 @@ static Create_ConVars(const bool: createConfigFile = true) {
 
     bind_pcvar_num(
         create_cvar(
-            "amx_smokegren_fix_waterrender", "1",
+            "amx_smokegren_fix_waterrender", "0",
             .has_min = true, .min_val = 0.0,
             .has_max = true, .max_val = 1.0,
             .description = "Fix the rendering of smoke cloud in water."
