@@ -95,9 +95,15 @@
 #include <fakemeta>
 #include <xs>
 
+#tryinclude "git_version"
+
 
 public stock const PluginName[]        = "Server-Side SmokeNade"
+#if defined GIT_PLUGIN_VERSION
+public stock const PluginVersion[]     = GIT_PLUGIN_VERSION
+#else
 public stock const PluginVersion[]     = "1.0.0-beta.2"
+#endif
 public stock const PluginAuthor[]      = "Sergey Shorokhov"
 public stock const PluginURL[]         = "https://github.com/wopox1337/ServerSide_SmokeNade"
 public stock const PluginDescription[] = "Replacing client smoke with Server-Side SmokeNade."

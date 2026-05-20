@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-    branches: [master]
     paths-ignore:
       - "**.md"
       - "**.spr"
@@ -26,6 +25,9 @@ jobs:
         uses: wopox1337/setup-amxxpawn@v1
         with:
           version: "1.9"
+
+      - name: Generate version include
+        run: bash gen_version.sh
 
       - name: Compile plugins
         working-directory: cstrike/addons/amxmodx/scripting/
