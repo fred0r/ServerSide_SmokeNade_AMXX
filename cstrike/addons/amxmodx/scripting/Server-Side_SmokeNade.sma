@@ -267,12 +267,20 @@ static CPartSmokeGrenade_Think(const entity) {
 
     static Float: scale
     pev(entity, pev_scale, scale)
-    scale += pev(entity, _pev_scaleSpeed)
+
+    new Float: thinkFreq = 0.05
+    new Float: speedMul = 1.0
+    new bool: inGrowth = (pev(entity, _pev_dieTime) > gametime && remainingTime >= 5.0)
+    if (inGrowth) {
+        thinkFreq = 0.10
+        speedMul = 2.0
+    }
+
+    scale += pev(entity, _pev_scaleSpeed) * speedMul
     if (scale > 8.0)
         scale = 8.0
     set_pev(entity, pev_scale, scale)
 
-    const Float: thinkFreq = 0.05
     if (pev(entity, _pev_dieTime) > gametime) {
         set_pev(entity, pev_nextthink, gametime + thinkFreq)
 
@@ -292,8 +300,7 @@ static CPartSmokeGrenade_Think(const entity) {
     set_pev(entity, pev_scale, scale)
 
     if (renderAmt > 1.0) {
-        const Float: fadeSpeed = 0.05
-        set_pev(entity, pev_nextthink, gametime + fadeSpeed)
+        set_pev(entity, pev_nextthink, gametime + 0.05)
 
         return
     }
