@@ -123,9 +123,6 @@ static Float: amx_smokegren_color[4]
 static Float: amx_smokegren_pieces
 static Float: amx_smokegren_lifetime
 
-static g_particles[512]
-static g_particleCount
-
 public plugin_precache() {
     #if (!defined PluginDescription)
         register_plugin(PluginName, PluginVersion, PluginAuthor)
@@ -198,12 +195,14 @@ public CNullEntity_Think(const entity) {
 }
 
 public CSGameRules_RestartRound() {
-    for (new i = 0; i < g_particleCount; i++) {
-        new entity = g_particles[i]
+    new entity = MaxClients
+    while ((entity = engfunc(EngFunc_FindEntityByString, entity, "classname", g_className))) {
         set_pev(entity, pev_flags, pev(entity, pev_flags) | FL_KILLME)
-        g_particles[i] = 0
+
+        #if (defined DEBUG)
+            entityCount(-1)
+        #endif
     }
-    g_particleCount = 0
 }
 
 static CPartSmokeGrenade_Create(const Float: origin[3], const Float: velocity[3],
@@ -227,8 +226,6 @@ static CPartSmokeGrenade_Create(const Float: origin[3], const Float: velocity[3]
     #if (defined DEBUG)
         client_print(0, print_center, "Smoke puffs entity count: `%i`", entityCount(1))
     #endif
-
-    g_particles[g_particleCount++] = entity
 
     return entity
 }
@@ -275,7 +272,7 @@ static CPartSmokeGrenade_Think(const entity) {
     pev(entity, pev_scale, scale)
     scale += pev(entity, _pev_scaleSpeed)
     const Float: maxScale = 8.0
-    if (scale > maxScale)
+    if (brightness < 20.0 && scale > maxScale)
         scale = maxScale
     set_pev(entity, pev_scale, scale)
 
