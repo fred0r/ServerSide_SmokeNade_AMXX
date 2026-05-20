@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches: [master]
     paths-ignore:
       - "**.md"
       - "**.spr"
@@ -26,9 +27,6 @@ jobs:
         with:
           version: "1.9"
 
-      - name: Generate version include
-        run: bash gen_version.sh
-
       - name: Compile plugins
         working-directory: cstrike/addons/amxmodx/scripting/
         run: |
@@ -46,4 +44,3 @@ jobs:
           export -f compile
 
           find * -type f -name "*.sma" -exec bash -c 'compile "$0"' {} \;
-
