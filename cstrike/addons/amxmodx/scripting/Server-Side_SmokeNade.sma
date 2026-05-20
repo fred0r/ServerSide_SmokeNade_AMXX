@@ -118,15 +118,9 @@ enum _: CustomPEV {
 }
 
 static        amx_smokegren_replacemode
-static        amx_smokegren_fix_waterrender
 static Float: amx_smokegren_color[4]
 static Float: amx_smokegren_pieces
 static Float: amx_smokegren_lifetime
-
-static g_waterEntities[128]
-static g_waterEntityCount
-
-const TASKID_CHECK_WATER = 31337
 
 public plugin_precache() {
     #if (!defined PluginDescription)
@@ -145,7 +139,6 @@ public plugin_init() {
     RegisterHam(Ham_Think, g_baseClassname, "CNullEntity_Think", .Post = false)
 
     Create_ConVars(.createConfigFile = true)
-    CacheWaterEntities()
 
 }
 
@@ -177,8 +170,6 @@ static bool: EV_CreateSmoke(const Float: origin[3], const bool: lightSmoke = fal
     new Float: colors[4]
     colors = GetColors(amx_smokegren_color)
 
-    FixWaterForSmoke(origin)
-
     CreateGasInside(origin, colors, lightSmoke)
 
     if (amx_smokegren_replacemode == 3 && !lightSmoke)
@@ -201,8 +192,6 @@ public CNullEntity_Think(const entity) {
 }
 
 public CSGameRules_RestartRound() {
-    RestoreAllWater()
-
     new entity = MaxClients
     while ((entity = engfunc(EngFunc_FindEntityByString, entity, "classname", g_className))) {
         set_pev(entity, pev_flags, pev(entity, pev_flags) | FL_KILLME)
@@ -526,16 +515,6 @@ static Create_ConVars(const bool: createConfigFile = true) {
         amx_smokegren_replacemode
     )
 
-    bind_pcvar_num(
-        create_cvar(
-            "amx_smokegren_fix_waterrender", "0",
-            .has_min = true, .min_val = 0.0,
-            .has_max = true, .max_val = 1.0,
-            .description = "Fix the rendering of smoke cloud in water."
-        ),
-        amx_smokegren_fix_waterrender
-    )
-
     bind_pcvar_float(
         create_cvar(
             "amx_smokegren_pieces", "8",
@@ -630,122 +609,6 @@ public CVarChange_amx_smokegren_color(const cvar, const oldValue[], const newVal
 
     for (new i; i < sizeof(amx_smokegren_color); i++)
         amx_smokegren_color[i] = floatclamp(amx_smokegren_color[i], 1.0, 255.0)
-}
-
-static CacheWaterEntities() {
-    new entity = MaxClients
-    while ((entity = engfunc(EngFunc_FindEntityByString, entity, "classname", "func_water"))) {
-        g_waterEntities[g_waterEntityCount++] = entity
-    }
-}
-
-static FixWaterForSmoke(const Float: origin[3]) {
-    if (!amx_smokegren_fix_waterrender)
-        return
-
-    new contents = engfunc(EngFunc_PointContents, origin)
-    if (!(contents & CONTENTS_WATER))
-        return
-
-    new Float: gametime = get_gametime()
-    new Float: newExpiry = gametime + amx_smokegren_lifetime + 5.0
-
-    for (new i = 0; i < g_waterEntityCount; i++) {
-        new entity = g_waterEntities[i]
-
-        if (!IsEntityNearPoint(entity, origin))
-            continue
-
-        new Float: currentExpiry
-        pev(entity, pev_fuser1, currentExpiry)
-
-        if (currentExpiry == 0.0)
-            set_pev(entity, pev_iuser3, pev(entity, pev_rendermode))
-
-        if (newExpiry > currentExpiry) {
-            set_pev(entity, pev_fuser1, newExpiry)
-            set_pev(entity, pev_rendermode, kRenderNormal)
-        }
-    }
-
-    ScheduleWaterCheck(FindMinWaterExpiry())
-}
-
-static bool: IsEntityNearPoint(entity, const Float: point[3]) {
-    static Float: absmin[3], Float: absmax[3]
-    pev(entity, pev_absmin, absmin)
-    pev(entity, pev_absmax, absmax)
-
-    static const Float: radius = 400.0
-    absmin[0] -= radius; absmin[1] -= radius; absmin[2] -= radius
-    absmax[0] += radius; absmax[1] += radius; absmax[2] += radius
-
-    return (point[0] >= absmin[0] && point[0] <= absmax[0] &&
-            point[1] >= absmin[1] && point[1] <= absmax[1] &&
-            point[2] >= absmin[2] && point[2] <= absmax[2])
-}
-
-static Float: FindMinWaterExpiry() {
-    new Float: minExpiry
-
-    for (new i = 0; i < g_waterEntityCount; i++) {
-        new Float: expiry
-        pev(g_waterEntities[i], pev_fuser1, expiry)
-
-        if (expiry > 0.0 && (minExpiry == 0.0 || expiry < minExpiry))
-            minExpiry = expiry
-    }
-
-    return minExpiry
-}
-
-static ScheduleWaterCheck(const Float: minExpiry) {
-    if (minExpiry <= 0.0)
-        return
-
-    new Float: delay = minExpiry - get_gametime()
-    if (delay < 0.1)
-        delay = 0.1
-
-    set_task(delay, "Task_CheckWaterRender", TASKID_CHECK_WATER)
-}
-
-public Task_CheckWaterRender() {
-    new Float: gametime = get_gametime()
-    new Float: nextExpiry
-
-    for (new i = 0; i < g_waterEntityCount; i++) {
-        new entity = g_waterEntities[i]
-        new Float: expiry
-        pev(entity, pev_fuser1, expiry)
-
-        if (expiry == 0.0)
-            continue
-
-        if (expiry <= gametime) {
-            set_pev(entity, pev_rendermode, pev(entity, pev_iuser3))
-            set_pev(entity, pev_fuser1, 0.0)
-        } else if (nextExpiry == 0.0 || expiry < nextExpiry) {
-            nextExpiry = expiry
-        }
-    }
-
-    if (nextExpiry > 0.0)
-        ScheduleWaterCheck(nextExpiry)
-}
-
-static RestoreAllWater() {
-    for (new i = 0; i < g_waterEntityCount; i++) {
-        new entity = g_waterEntities[i]
-
-        if (pev(entity, pev_fuser1) == 0.0)
-            continue
-
-        set_pev(entity, pev_rendermode, pev(entity, pev_iuser3))
-        set_pev(entity, pev_fuser1, 0.0)
-    }
-
-    remove_task(TASKID_CHECK_WATER)
 }
 
 static StartupCheck() {
