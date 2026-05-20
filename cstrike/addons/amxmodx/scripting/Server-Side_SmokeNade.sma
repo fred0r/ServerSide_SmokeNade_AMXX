@@ -277,8 +277,8 @@ static CPartSmokeGrenade_Think(const entity) {
     }
 
     scale += pev(entity, _pev_scaleSpeed) * speedMul
-    if (scale > 8.0)
-        scale = 8.0
+    if (scale > 6.0)
+        scale = 6.0
     set_pev(entity, pev_scale, scale)
 
     if (pev(entity, _pev_dieTime) > gametime) {
