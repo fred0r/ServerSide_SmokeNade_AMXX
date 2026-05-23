@@ -191,7 +191,15 @@ public CNullEntity_Think(const entity) {
     CPartSmokeGrenade_Think(entity)
 }
 
+public plugin_end() {
+    RemoveAllSmokeParticles()
+}
+
 public CSGameRules_RestartRound() {
+    RemoveAllSmokeParticles()
+}
+
+static RemoveAllSmokeParticles() {
     new entity = MaxClients
     while ((entity = engfunc(EngFunc_FindEntityByString, entity, "classname", g_className))) {
         set_pev(entity, pev_flags, pev(entity, pev_flags) | FL_KILLME)
@@ -207,6 +215,9 @@ static CPartSmokeGrenade_Create(const Float: origin[3], const Float: velocity[3]
                         const Float: color[4] = { 175.0, 175.0, 175.0, 190.0 }) {
 
     new entity = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, g_baseClassname))
+    if (!entity)
+        return 0
+
     set_pev(entity, pev_classname, g_className)
 
     engfunc(EngFunc_SetModel, entity, model)
@@ -348,6 +359,7 @@ static CreateGasSmoke(const Float: origin[3], const Float: velocity[3],
     }
 
     set_pev(entity, _pev_spawnInside, insideCloud)
+    set_pev(entity, _pev_timeCreated, gametime)
     set_pev(entity, pev_avelocity, avelocity)
     set_pev(entity, pev_nextthink, gametime + 0.15)
 
@@ -358,6 +370,7 @@ static CreateSmokePop(const Float: origin[3], Float: color[4]) {
     new Float: step = 360.0 / amx_smokegren_pieces
 
     static Float: angles[3]
+    angles = Float: {0.0, 0.0, 0.0}
     static Float: vForward[3], Float: vRight[3], Float: vUp[3]
 
     for (new Float: angleStep = 0.0; angleStep < 360.0; angleStep += step) {
@@ -420,6 +433,7 @@ static CreateGasInside(const Float: origin[3], Float: color[4], const bool: ligh
     new Float: step = 360.0 / pieces
 
     static Float: vAngles[3]
+    vAngles = Float: {0.0, 0.0, 0.0}
     static Float: vForward[3], Float: vRight[3], Float: vUp[3]
 
     for (new Float: fAngleStep = 0.0; fAngleStep < 360.0; fAngleStep += step) {
