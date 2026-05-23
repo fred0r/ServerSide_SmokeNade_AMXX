@@ -136,6 +136,7 @@ public plugin_init() {
     register_event("HLTV", "CSGameRules_RestartRound", "a", "1=0", "2=0")
 
     register_forward(FM_PlaybackEvent, "EV_Playback", ._post = false)
+    register_forward(FM_AddToFullPack, "FM_AddToFullPack_Post", ._post = true)
     RegisterHam(Ham_Think, g_baseClassname, "CNullEntity_Think", .Post = false)
 
     Create_ConVars(.createConfigFile = true)
@@ -179,6 +180,33 @@ static bool: EV_CreateSmoke(const Float: origin[3], const bool: lightSmoke = fal
         return true
 
     return false
+}
+
+public FM_AddToFullPack_Post(es_handle, e, ent, host, hostflags, player, p_set) {
+    if (!player)
+        return FMRES_IGNORED
+
+    static classname[32]
+    pev(ent, pev_classname, classname, charsmax(classname))
+
+    if (strcmp(classname, g_className) != 0)
+        return FMRES_IGNORED
+
+    static Float: entOrigin[3], Float: eyePos[3]
+    pev(ent, pev_origin, entOrigin)
+    pev(player, pev_origin, eyePos)
+    eyePos[2] += 17.0
+
+    engfunc(EngFunc_TraceLine, eyePos, entOrigin, IGNORE_MONSTERS, player, 0)
+
+    static Float: fraction
+    get_tr2(0, TR_flFraction, fraction)
+
+    if (fraction < 1.0) {
+        set_es(es_handle, ES_Effects, get_es(es_handle, ES_Effects) | EF_NODRAW)
+    }
+
+    return FMRES_IGNORED
 }
 
 public CNullEntity_Think(const entity) {
@@ -227,8 +255,7 @@ static CPartSmokeGrenade_Create(const Float: origin[3], const Float: velocity[3]
     set_pev(entity, pev_gravity, 0.0)
     set_pev(entity, pev_scale, scale)
 
-    set_pev(entity, pev_rendermode, kRenderTransTexture)
-    set_pev(entity, pev_renderfx, kRenderFxNone)
+    set_pev(entity, pev_rendermode, kRenderTransAlpha)
     set_pev(entity, pev_rendercolor, color)
     set_pev(entity, pev_renderamt, color[3])
 
