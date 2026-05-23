@@ -227,7 +227,8 @@ static CPartSmokeGrenade_Create(const Float: origin[3], const Float: velocity[3]
     set_pev(entity, pev_gravity, 0.0)
     set_pev(entity, pev_scale, scale)
 
-    set_pev(entity, pev_rendermode, kRenderTransAlpha)
+    set_pev(entity, pev_rendermode, kRenderTransTexture)
+    set_pev(entity, pev_renderfx, kRenderFxNone)
     set_pev(entity, pev_rendercolor, color)
     set_pev(entity, pev_renderamt, color[3])
 
