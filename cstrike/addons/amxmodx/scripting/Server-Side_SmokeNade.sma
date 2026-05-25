@@ -97,7 +97,7 @@
 
 
 public stock const PluginName[]        = "Server-Side SmokeNade"
-public stock const PluginVersion[]     = "1.0.1-slop"
+public stock const PluginVersion[]     = "1.0.2"
 public stock const PluginAuthor[]      = "Sergey Shorokhov"
 public stock const PluginURL[]         = "https://github.com/fred0r/ServerSide_SmokeNade_AMXX"
 public stock const PluginDescription[] = "Replacing client smoke with Server-Side SmokeNade."
@@ -123,9 +123,7 @@ static Float: amx_smokegren_pieces
 static Float: amx_smokegren_lifetime
 
 public plugin_precache() {
-    #if (!defined PluginDescription)
-        register_plugin(PluginName, PluginVersion, PluginAuthor)
-    #endif
+    register_plugin(PluginName, PluginVersion, PluginAuthor)
 
     StartupCheck()
 
@@ -192,17 +190,20 @@ public FM_AddToFullPack_Post(es_handle, e, ent, host, hostflags, player, p_set) 
     if (strcmp(classname, g_className) != 0)
         return FMRES_IGNORED
 
-    static Float: entOrigin[3], Float: eyePos[3]
+    static Float: entOrigin[3], Float: eyePos[3], Float: viewOfs[3]
     pev(ent, pev_origin, entOrigin)
     pev(player, pev_origin, eyePos)
-    eyePos[2] += 17.0
+    pev(player, pev_view_ofs, viewOfs)
+    eyePos[0] += viewOfs[0]
+    eyePos[1] += viewOfs[1]
+    eyePos[2] += viewOfs[2]
 
     engfunc(EngFunc_TraceLine, eyePos, entOrigin, IGNORE_MONSTERS, player, 0)
 
     static Float: fraction
     get_tr2(0, TR_flFraction, fraction)
 
-    if (fraction < 1.0) {
+    if (fraction < 1.0 && get_tr2(0, TR_pHit) == 0) {
         set_es(es_handle, ES_Effects, get_es(es_handle, ES_Effects) | EF_NODRAW)
     }
 
