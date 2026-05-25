@@ -363,6 +363,8 @@ static CreateGasSmoke(const Float: origin[3], const Float: velocity[3],
         .scale = random_float(2.5, 4.0),
         .color = color
     )
+    if (!entity)
+        return 0
 
     static Float: avelocity[3]
     new Float: gametime = get_gametime()
