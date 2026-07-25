@@ -190,13 +190,13 @@ public FM_AddToFullPack_Post(es_handle, e, ent, host, hostflags, player, p_set) 
 
     static Float: entOrigin[3], Float: eyePos[3], Float: viewOfs[3]
     pev(ent, pev_origin, entOrigin)
-    pev(player, pev_origin, eyePos)
-    pev(player, pev_view_ofs, viewOfs)
+    pev(host, pev_origin, eyePos)
+    pev(host, pev_view_ofs, viewOfs)
     eyePos[0] += viewOfs[0]
     eyePos[1] += viewOfs[1]
     eyePos[2] += viewOfs[2]
 
-    engfunc(EngFunc_TraceLine, eyePos, entOrigin, IGNORE_MONSTERS, player, 0)
+    engfunc(EngFunc_TraceLine, eyePos, entOrigin, IGNORE_MONSTERS, host, 0)
 
     static Float: fraction
     get_tr2(0, TR_flFraction, fraction)
