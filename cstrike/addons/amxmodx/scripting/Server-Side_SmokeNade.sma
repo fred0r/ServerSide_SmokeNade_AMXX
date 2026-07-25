@@ -201,8 +201,17 @@ public FM_AddToFullPack_Post(es_handle, e, ent, host, hostflags, player, p_set) 
     static Float: fraction
     get_tr2(0, TR_flFraction, fraction)
 
-    if (fraction < 1.0 && get_tr2(0, TR_pHit) == 0) {
-        set_es(es_handle, ES_Effects, get_es(es_handle, ES_Effects) | EF_NODRAW)
+    if (fraction < 1.0) {
+        new hitEnt = get_tr2(0, TR_pHit)
+        if (hitEnt == 0) {
+            set_es(es_handle, ES_Effects, get_es(es_handle, ES_Effects) | EF_NODRAW)
+        } else {
+            static hitClassname[32]
+            pev(hitEnt, pev_classname, hitClassname, charsmax(hitClassname))
+            if (equal(hitClassname, "func_water") || equal(hitClassname, "func_water_analog") || equal(hitClassname, "func_illusion")) {
+                set_es(es_handle, ES_Effects, get_es(es_handle, ES_Effects) | EF_NODRAW)
+            }
+        }
     }
 
     return FMRES_IGNORED
