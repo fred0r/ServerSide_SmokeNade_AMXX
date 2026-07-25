@@ -206,10 +206,13 @@ public FM_AddToFullPack_Post(es_handle, e, ent, host, hostflags, player, p_set) 
         if (hitEnt == 0) {
             set_es(es_handle, ES_Effects, get_es(es_handle, ES_Effects) | EF_NODRAW)
         } else {
-            static hitClassname[32]
-            pev(hitEnt, pev_classname, hitClassname, charsmax(hitClassname))
-            if (equal(hitClassname, "func_water") || equal(hitClassname, "func_water_analog") || equal(hitClassname, "func_illusion")) {
-                set_es(es_handle, ES_Effects, get_es(es_handle, ES_Effects) | EF_NODRAW)
+            new contents = engfunc(EngFunc_PointContents, entOrigin)
+            if (contents == CONTENTS_WATER || contents == CONTENTS_SLIME) {
+                static hitClassname[32]
+                pev(hitEnt, pev_classname, hitClassname, charsmax(hitClassname))
+                if (equal(hitClassname, "func_water") || equal(hitClassname, "func_water_analog") || equal(hitClassname, "func_illusion")) {
+                    set_es(es_handle, ES_Effects, get_es(es_handle, ES_Effects) | EF_NODRAW)
+                }
             }
         }
     }
