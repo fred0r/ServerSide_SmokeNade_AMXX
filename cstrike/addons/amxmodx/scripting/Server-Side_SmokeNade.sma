@@ -109,12 +109,10 @@ static const g_baseClassname[]  = "info_null"
 static const g_className[]      = "particle_smokegren"
 
 enum _: CustomPEV {
-    _pev_spawnInside    = pev_iuser1,
     _pev_popCreated     = pev_iuser2,
 
     _pev_scaleSpeed     = pev_fuser2,
     _pev_dieTime        = pev_fuser3,
-    _pev_timeCreated    = pev_fuser4,
 }
 
 static        amx_smokegren_replacemode
@@ -287,13 +285,13 @@ static CPartSmokeGrenade_Think(const entity) {
 
     if (brightness >= 255.0 && remainingTime < 3.0) {
         set_pev(entity, _pev_scaleSpeed, 0.0)
-        set_pev(entity, _pev_timeCreated, gametime)
         set_pev(entity, pev_avelocity, Float: {0.0, 0.0, 0.0})
     }
 
     if (remainingTime < 5.0) {
         if (brightness > 0.0) {
-            brightness -= (gametime - pev(entity, _pev_timeCreated)) * 0.1
+            const Float: fadeRate = 25.0
+            brightness -= fadeRate * 0.05
             set_pev(entity, pev_renderamt, brightness)
         }
 
@@ -389,8 +387,7 @@ static CreateGasSmoke(const Float: origin[3], const Float: velocity[3],
         set_pev(entity, _pev_dieTime, dieTime - (amx_smokegren_lifetime / 3.0))
     }
 
-    set_pev(entity, _pev_spawnInside, insideCloud)
-    set_pev(entity, _pev_timeCreated, gametime)
+
     set_pev(entity, pev_avelocity, avelocity)
     set_pev(entity, pev_nextthink, gametime + 0.15)
 
@@ -405,7 +402,7 @@ static CreateSmokePop(const Float: origin[3], Float: color[4]) {
     static Float: vForward[3], Float: vRight[3], Float: vUp[3]
 
     for (new Float: angleStep = 0.0; angleStep < 360.0; angleStep += step) {
-        angles[XS_YAW] += angleStep
+        angles[XS_YAW] = angleStep
 
         engfunc(EngFunc_AngleVectors, angles, vForward, vRight, vUp)
         xs_vec_normalize(vForward, vForward)
@@ -419,7 +416,7 @@ static CreateSmokePop(const Float: origin[3], Float: color[4]) {
     }
 
     for (new Float: angleStep = 0.0; angleStep < 360.0; angleStep += step) {
-        angles[XS_YAW] += angleStep
+        angles[XS_YAW] = angleStep
 
         engfunc(EngFunc_AngleVectors, angles, vForward, vRight, vUp)
         xs_vec_normalize(vForward, vForward)
@@ -468,7 +465,7 @@ static CreateGasInside(const Float: origin[3], Float: color[4], const bool: ligh
     static Float: vForward[3], Float: vRight[3], Float: vUp[3]
 
     for (new Float: fAngleStep = 0.0; fAngleStep < 360.0; fAngleStep += step) {
-        vAngles[XS_YAW] += fAngleStep
+        vAngles[XS_YAW] = fAngleStep
 
         engfunc(EngFunc_AngleVectors, vAngles, vForward, vRight, vUp)
         xs_vec_normalize(vForward, vForward)
@@ -487,7 +484,7 @@ static CreateGasInside(const Float: origin[3], Float: color[4], const bool: ligh
     }
 
     for (new Float: fAngleStep = 0.0; fAngleStep < 360.0; fAngleStep += step) {
-        vAngles[XS_YAW] += fAngleStep
+        vAngles[XS_YAW] = fAngleStep
 
         engfunc(EngFunc_AngleVectors, vAngles, vForward, vRight, vUp)
         xs_vec_normalize(vForward, vForward)
